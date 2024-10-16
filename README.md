@@ -1,5 +1,19 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+# NetSuite Customer Viewer
+
+A Next.js application that fetches and displays customer data from NetSuite. This project demonstrates integration with NetSuite's API, handling asynchronous data fetching, and rendering customer information in a React-based user interface.
+
+## Features
+
+- Fetches customer data from NetSuite via a custom API route
+- Displays a list of customers with their IDs and detail links
+- Implements error handling and loading states
+- Uses TypeScript for improved type safety and developer experience
+- Built with Next.js for server-side rendering and API route support
+
+This project serves as a starting point for developers looking to integrate NetSuite data into their web applications using modern web technologies.
+
 ## Getting Started
 
 First, run the development server:
