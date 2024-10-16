@@ -22,36 +22,39 @@ const token = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
+  const { method } = req;
+
   try {
-    const request_data = {
+    let request_data = {
       url: process.env.NEXT_PUBLIC_NETSUITE_BASE_URL!,
-      method: 'GET',
+      method: method as 'GET' | 'POST',
     };
 
     // Generate OAuth headers
     const oauthData = oauth.authorize(request_data, token);
-    console.log('OAuth Data (App):', oauthData); // Log OAuth data for debugging
+    console.log(`OAuth Data (${method}):`, oauthData);
 
-    // Add realm to the authorization header
     const oauthHeaders = {
       Authorization: `OAuth realm="${process.env.NEXT_PUBLIC_NETSUITE_RELM}", ${oauth.toHeader(oauthData).Authorization.substring(6)}`,
       'Content-Type': 'application/json',
       'Accept-Encoding': 'gzip, deflate, br',
-      'User-Agent': 'PostmanRuntime/7.42.0', // Matching Postman
+      'User-Agent': 'PostmanRuntime/7.42.0',
     };
 
-    console.log('Generated OAuth Headers (App):', oauthHeaders); // Log headers for debugging
+    console.log(`Generated OAuth Headers (${method}):`, oauthHeaders);
 
-    // Make the API request to NetSuite
-    const response = await axios.get(request_data.url, {
-      headers: oauthHeaders, // Pass the OAuth headers
-    });
+    let response;
+    if (method === 'GET') {
+      response = await axios.get(request_data.url, { headers: oauthHeaders });
+    } else if (method === 'POST') {
+      response = await axios.post(request_data.url, req.body, { headers: oauthHeaders });
+    } else {
+      throw new Error(`Unsupported method: ${method}`);
+    }
 
-    // Send the response back to the client
     res.status(200).json(response.data);
   } catch (error: any) {
-    console.error('Error in NetSuite API request (App):', error); // Log error details
+    console.error(`Error in NetSuite API request (${method}):`, error);
     res.status(error.response?.status || 500).json({ error: error.message });
   }
 }
