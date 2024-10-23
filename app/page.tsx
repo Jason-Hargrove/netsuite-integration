@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, FormEvent } from 'react';
+import styles from './Home.module.css';
 
 // Update the interface definitions
 interface Link {
@@ -39,6 +40,7 @@ export default function Home() {
     companyName: '',
     subsidiary: { id: '1', refName: 'Parent Company' }
   });
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -74,6 +76,7 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const response = await fetch('/api/netsuite', {
@@ -91,6 +94,7 @@ export default function Home() {
       const data = await response.json();
       setCustomers(prev => [...prev, data]);
       setNewCustomer({ companyName: '', subsidiary: { id: '1', refName: 'Parent Company' } });
+      setSuccessMessage(`Customer "${data.companyName}" added successfully with ID: ${data.id}`);
     } catch (err: any) {
       setError(`Error creating customer: ${err.message}`);
       console.error(err);
@@ -98,10 +102,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
-  if (customers.length === 0) return <p>No customers available.</p>;
 
   return (
     <div>
@@ -115,24 +115,40 @@ export default function Home() {
           onChange={handleInputChange}
           placeholder="Company Name"
           required
+          className={styles.input}
         />
-        <button type="submit" disabled={loading}>Add Customer</button>
+        <button type="submit" disabled={loading} className={styles.button}>
+          Add Customer
+        </button>
       </form>
 
-      <ul>
-        {customers.map((customer) => (
-          <li key={customer.id}>
-            ID: {customer.id} |{' '}
-            {customer.links && customer.links.length > 0 ? (
-              <a href={customer.links[0].href} target="_blank" rel="noopener noreferrer">
-                Details
-              </a>
-            ) : (
-              'No Links Available'
-            )}
-          </li>
-        ))}
-      </ul>
+      {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
+      {error && <p className={styles.errorMessage}>{error}</p>}
+
+      <h2>Customer List</h2>
+      {customers.length === 0 ? (
+        <p>No customers available.</p>
+      ) : (
+        <ul className={styles.customerList}>
+          {customers.map((customer) => (
+            <li key={customer.id} className={styles.customerItem}>
+              ID: {customer.id} |{' '}
+              {customer.links && customer.links.length > 0 ? (
+                <a 
+                  href={customer.links[0].href} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={styles.customerLink}
+                >
+                  Details
+                </a>
+              ) : (
+                'No Links Available'
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
